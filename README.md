@@ -36,4 +36,4 @@ _Data as of April 21st 2018._
 ### Disclaimer
 
 This was done to demonstrate powers of phantomjs together with express & jQuery, not as an encouragement to mass-web-crawl.
-Please use with reasonable usage within Github limits.   
+Please use with reasonable traffic within Github limits.  
