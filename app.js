@@ -13,15 +13,19 @@ const { document } = (new JSDOM('')).window;
 global.document = document;
 const $ = jQuery = require('jquery')(window);
 
-function extractData(html) {
+function extractData(html, owner, repo) {
 
     const document = $(html);
     const data = {};
 
+    function warn(message) {
+        console.warn("[" + owner + "/" + repo +"] : " + message);
+    }
+
     // social counts strip (watchers/stars/forks)
     let socialCounts = document.find(".pagehead-actions a.social-count");
     if (socialCounts.length !== 3) {
-        console.warn("Unable to parse social counts section.");
+        warn("Unable to parse social counts section.");
     } else {
         let count = index => socialCounts.eq(index).html().trim().replace(",", "");
         data.watchers = count(0);
@@ -32,7 +36,7 @@ function extractData(html) {
     // navigation bar (issues/pull-requests)
     let navigation = document.find(".reponav .Counter");
     if (navigation.length !== 3) {
-        console.warn("Unable to parse navigation bar.");
+        warn("Unable to parse navigation bar.");
     } else {
         let nav = index => navigation.eq(index).html().trim().replace(",", "");
         data.issues = nav(0);
@@ -42,7 +46,7 @@ function extractData(html) {
     // numeric summaries (commits/branches/releases/contributors)
     let nums = document.find(".numbers-summary .num");
     if (nums.length !== 4) {
-        console.warn("Unable to parse numeric summary section.");
+        warn("Unable to parse numeric summary section.");
     } else {
         let num = index => nums.eq(index).html().trim().replace(",", "");
         data.commits = num(0);
@@ -66,7 +70,11 @@ app.get("/:owner/:repo", (req, res) => {
 
     phantom.on('close', () => {
         let file = `${__dirname}/${config.outputDir}/${owner}/${repo}/repo.html`;
-        fs.readFile(file, 'utf8', (err, html) => res.json(extractData(html)));
+        fs.readFile(file, 'utf8', (err, html) => {
+            let data = extractData(html);
+            res.json(data);
+            console.warn("[" + owner + "/" + repo +"] : " + JSON.stringify(data));
+        });
     });
 
 });
