@@ -66,7 +66,7 @@ app.get("/:owner/:repo", (req, res) => {
     let owner = req.params.owner.trim();
     let repo = req.params.repo.trim();
 
-    const phantom = spawn('phantomjs', ['d§ownload.js', owner, repo]);
+    const phantom = spawn('phantomjs', ['download.js', owner, repo]);
 
     phantom.on('close', () => {
 
