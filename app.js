@@ -1,5 +1,5 @@
 // core
-const { spawn } = require('child_process');
+const { execSync } = require('child_process');
 const express = require('express');
 const app = express();
 const fs = require("fs");
@@ -63,26 +63,32 @@ function extractData(html, owner, repo) {
 }
 
 app.get("/:owner/:repo", (req, res) => {
+
     let owner = req.params.owner.trim();
     let repo = req.params.repo.trim();
 
-    const phantom = spawn('phantomjs', ['download.js', owner, repo]);
+    try {
+        execSync('phantomjs download.js ' + owner + ' ' + repo);
+    } catch (error) {
+        res.writeHead(500);
+        let message = "Couldn't download " + owner + "/" + repo + " repo page via PhantomJS";
+        console.warn(message);
+        res.end(message);
+        return;
+    }
 
-    phantom.on('close', () => {
-
-        let file = `${__dirname}/${config.outputDir}/${owner}/${repo}/repo.html`;
-        fs.readFile(file, 'utf8', (err, html) => {
-            if (err) {
-                res.writeHead(500);
-                let message = "Couldn't download " + owner + "/" + repo + " repo page via PhantomJS";
-                console.warn(message);
-                res.end(message);
-            } else {
-                let data = extractData(html, owner, repo);
-                res.json(data);
-                console.info("[" + owner + "/" + repo +"] : " + JSON.stringify(data));
-            }
-        });
+    let file = `${__dirname}/${config.outputDir}/${owner}/${repo}/repo.html`;
+    fs.readFile(file, 'utf8', (err, html) => {
+        if (err) {
+            res.writeHead(500);
+            let message = "Couldn't process " + file;
+            console.warn(message);
+            res.end(message);
+        } else {
+            let data = extractData(html, owner, repo);
+            res.json(data);
+            console.info("[" + owner + "/" + repo +"] : " + JSON.stringify(data));
+        }
     });
 });
 
