@@ -1,9 +1,6 @@
-// core
-const { execSync } = require('child_process');
+const phantom = require('phantom');
 const express = require('express');
 const app = express();
-const fs = require("fs");
-const config = require("./config.json");
 
 // jQuery with dependencies
 let jsdom = require('jsdom');
@@ -64,35 +61,21 @@ function extractData(html, owner, repo) {
 
 app.get("/:owner/:repo", (req, res) => {
 
-    let owner = req.params.owner.trim();
-    let repo = req.params.repo.trim();
+    (async function () {
 
-    try {
-        execSync('phantomjs download.js ' + owner + ' ' + repo);
-    } catch (error) {
-        res.writeHead(500);
-        let message = "Couldn't download " + owner + "/" + repo + " repo page via PhantomJS";
-        console.warn(message);
-        res.end(message);
-        return;
-    }
+        let owner = req.params.owner.trim();
+        let repo = req.params.repo.trim();
+        let url = 'https://github.com/' + owner + '/' + repo;
 
-    let file = `${__dirname}/${config.outputDir}/${owner}/${repo}/repo.html`;
-    fs.readFile(file, 'utf8', (err, html) => {
-        if (err) {
-            res.writeHead(500);
-            let message = "Couldn't process " + file;
-            console.warn(message);
-            res.end(message);
-        } else {
-            let data = extractData(html, owner, repo);
-            res.json(data);
-            console.info("[" + owner + "/" + repo +"] : " + JSON.stringify(data));
-        }
-    });
+        const instance = await phantom.create();
+        const page = await instance.createPage();
+        const status = await page.open(url);
+        const content = await page.property('content');
+
+        let json = extractData(content, owner, repo);
+        res.json(json);
+
+    })(req, res);
 });
 
-app.listen(config.port, () => {
-    console.log('Github repo scraper running on port ' + config.port);
-    console.log(`Repository : ${__dirname}/${config.outputDir}`);
-});
+app.listen(5000, () => console.log('Github repo scraper running on port ' + 5000));

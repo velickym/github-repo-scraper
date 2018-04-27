@@ -33,10 +33,6 @@ will return :
 
 _Data as of April 21st 2018._
 
-### Data
-
-`repo.html` and `snapshot.png` are saved into `./repo/{owner}/{repo}`
-
 ### Disclaimer
 
 This was done to demonstrate powers of phantomjs together with express & jQuery, not as an encouragement to mass-web-crawl.
