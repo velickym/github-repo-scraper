@@ -63,20 +63,26 @@ function extractData(html, owner, repo) {
 }
 
 app.get("/:owner/:repo", (req, res) => {
-    let owner = req.params.owner;
-    let repo = req.params.repo;
+    let owner = req.params.owner.trim();
+    let repo = req.params.repo.trim();
 
     const phantom = spawn('phantomjs', ['download.js', owner, repo]);
 
     phantom.on('close', () => {
         let file = `${__dirname}/${config.outputDir}/${owner}/${repo}/repo.html`;
         fs.readFile(file, 'utf8', (err, html) => {
-            let data = extractData(html);
-            res.json(data);
-            console.warn("[" + owner + "/" + repo +"] : " + JSON.stringify(data));
+            if (err) {
+                console.error(err);
+            } else {
+                let data = extractData(html, owner, repo);
+                res.json(data);
+                console.info("[" + owner + "/" + repo +"] : " + JSON.stringify(data));
+            }
         });
     });
-
 });
 
-app.listen(5000, () => console.log('Github repo scraper running on port 5000.'));
+app.listen(config.port, () => {
+    console.log('Github repo scraper running on port ' + config.port);
+    console.log(`Repository : ${__dirname}/${config.outputDir}`);
+});

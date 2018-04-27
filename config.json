@@ -1,3 +1,4 @@
 {
-  "outputDir": "repo"
+  "outputDir": "repo",
+  "port" : 5000
 }
