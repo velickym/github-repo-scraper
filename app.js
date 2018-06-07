@@ -75,6 +75,9 @@ app.get("/:owner/:repo", (req, res) => {
         let json = extractData(content, owner, repo);
         res.json(json);
 
+        console.log(owner + "/" + repo + " scraped : " + status);
+        instance.exit();
+
     })(req, res);
 });
 
